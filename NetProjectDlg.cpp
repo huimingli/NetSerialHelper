@@ -96,7 +96,7 @@ void CNetProjectDlg::receiveData(){
 BOOL CNetProjectDlg::PreTranslateMessage(MSG* pMsg){
 	if(pMsg->message == 1000){
 		receiveData();
-		return false;
+		return CDialog::PreTranslateMessage(pMsg);
 	}else{
 		return CDialog::PreTranslateMessage(pMsg);
 	}
@@ -108,7 +108,8 @@ BEGIN_MESSAGE_MAP(CNetProjectDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, OnClickedConnect)
-	ON_BN_CLICKED(IDCANCEL, OnClickedSend)
+	ON_BN_CLICKED(ID_BUTTON_SEND, OnButtonSend)
+	ON_BN_CLICKED(IDC_BUTTON_CLOSE, OnButtonClose)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -143,7 +144,7 @@ BOOL CNetProjectDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 	
 	// TODO: Add extra initialization here
-	m_client = socket(AF_INET,SOCK_STREAM,0);
+	m_client = socket(AF_INET,SOCK_DGRAM,0);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -199,6 +200,9 @@ HCURSOR CNetProjectDlg::OnQueryDragIcon()
 void CNetProjectDlg::OnClickedConnect() 
 {
 	// TODO: Add your control notification handler code here
+	if(m_client == NULL){
+		m_client  = socket(AF_INET,SOCK_DGRAM,0);
+	}
 	sockaddr_in serveraddr;
 	UpdateData(true);
 	serveraddr.sin_family = AF_INET;
@@ -218,16 +222,26 @@ void CNetProjectDlg::OnClickedConnect()
 
 	
 }
+ 
 
-void CNetProjectDlg::OnClickedSend() 
+ 
+
+void CNetProjectDlg::OnButtonSend() 
 {
 	// TODO: Add your control notification handler code here
-	CString str,name,info;
+		CString str,name,info;
 	m_name.GetWindowText(name);
 	m_info.GetWindowText(str);
 	if(!name.IsEmpty()&&!str.IsEmpty()){
 		info.Format("%s say:%s",name,str);
 		int i = send(m_client,info.GetBuffer(0),info.GetLength(),0);
 	}
-	
+}
+
+void CNetProjectDlg::OnButtonClose() 
+{
+	// TODO: Add your control notification handler code here
+	closesocket(m_client);
+
+	m_client = NULL;
 }

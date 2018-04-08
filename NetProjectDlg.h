@@ -46,7 +46,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnClickedConnect();
-	afx_msg void OnClickedSend();
+	afx_msg void OnButtonSend();
+	afx_msg void OnButtonClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:

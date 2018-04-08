@@ -30,7 +30,7 @@ ImplementationFile=NetProjectDlg.cpp
 Filter=D
 BaseClass=CDialog
 VirtualFilter=dWC
-LastObject=IDC_EDIT_IP
+LastObject=ID_BUTTON_SEND
 
 [CLS:CAboutDlg]
 Type=0
@@ -50,9 +50,9 @@ Control4=IDOK,button,1342373889
 [DLG:IDD_NETPROJECT_DIALOG]
 Type=1
 Class=CNetProjectDlg
-ControlCount=11
+ControlCount=12
 Control1=IDOK,button,1342242817
-Control2=IDCANCEL,button,1342242816
+Control2=ID_BUTTON_SEND,button,1342242816
 Control3=IDC_STATIC,button,1342177287
 Control4=IDC_EDIT_SEND,edit,1350631552
 Control5=IDC_STATIC,static,1342308352
@@ -62,4 +62,5 @@ Control8=IDC_EDIT_IP,edit,1350631552
 Control9=IDC_EDIT_PORT,edit,1350631552
 Control10=IDC_EDIT_NICKNAME,edit,1350631552
 Control11=IDC_LIST_RECEIVE,listbox,1352728835
+Control12=IDC_BUTTON_CLOSE,button,1342242816
 
