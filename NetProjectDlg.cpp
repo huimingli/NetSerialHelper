@@ -66,6 +66,7 @@ CNetProjectDlg::CNetProjectDlg(CWnd* pParent /*=NULL*/)
 	m_port = 0;
 	m_IP = _T("");
 	m_remote = _T("");
+	m_EditRxData = _T("");
 	//}}AFX_DATA_INIT
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -86,6 +87,7 @@ void CNetProjectDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_IP, m_IP);
 	DDX_Text(pDX, IDC_EDIT_REMOTE, m_remote);
 	DDX_Control(pDX, IDC_MSCOMM1, m_Comm1);
+	DDX_LBString(pDX, IDC_LIST_RECEIVE, m_EditRxData);
 	//}}AFX_DATA_MAP
 }
 
@@ -343,6 +345,23 @@ void CNetProjectDlg::OnButtonSend()
 void CNetProjectDlg::OnClickedSerialPort() 
 {
 	// TODO: Add your control notification handler code here
+	if(m_Comm1.GetPortOpen())
+		m_Comm1.SetPortOpen(FALSE);
+	
+	m_Comm1.SetCommPort(2); //选择com1，可根据具体情况更改
+	m_Comm1.SetInBufferSize(1024); //设置输入缓冲区的大小，Bytes
+	m_Comm1.SetOutBufferSize(1024); //设置输入缓冲区的大小，Bytes//
+	m_Comm1.SetSettings("9600,n,8,1"); //波特率9600，无校验，8个数据位，1个停止位
+	m_Comm1.SetInputMode(1); //1：表示以二进制方式检取数据
+	m_Comm1.SetRThreshold(1); 
+	//参数1表示每当串口接收缓冲区中有多于或等于1个字符时将引发一个接收数据的OnComm事件
+	m_Comm1.SetInputLen(0); //设置当前接收区数据长度为0
+	if( !m_Comm1.GetPortOpen())
+		m_Comm1.SetPortOpen(TRUE);//打开串口
+	else
+		AfxMessageBox("cannot open serial port");
+	m_Comm1.GetInput();//先预读缓冲区以清除残留数据
+	UpdateData(false);
 	
 }
 
@@ -355,5 +374,27 @@ END_EVENTSINK_MAP()
 void CNetProjectDlg::OnComm() 
 {
 	// TODO: Add your control notification handler code here
-	
+	VARIANT variant_inp;
+    COleSafeArray safearray_inp;
+    LONG len,k;
+    BYTE rxdata[2048]; //设置BYTE数组 An 8-bit integerthat is not signed.
+    CString strtemp;
+	UpdateData(true);
+	memset(rxdata,0,sizeof(rxdata));
+    if(m_Comm1.GetCommEvent()==2) //事件值为2表示接收缓冲区内有字符
+    {             ////////以下你可以根据自己的通信协议加入处理代码
+        variant_inp=m_Comm1.GetInput(); //读缓冲区
+        safearray_inp=variant_inp; //VARIANT型变量转换为ColeSafeArray型变量
+        len=safearray_inp.GetOneDimSize(); //得到有效数据长度
+        for(k=0;k<len;k++)
+            safearray_inp.GetElement(&k,rxdata+k);//转换为BYTE型数组
+        for(k=0;k<len;k++) //将数组转换为Cstring型变量
+        {
+            BYTE bt=*(char*)(rxdata+k); //字符型
+            strtemp.Format("%c",bt); //将字符送入临时变量strtemp存放
+            m_EditRxData+=strtemp; //加入接收编辑框对应字符串 
+        }
+    }
+    UpdateData(false); //更新编辑框内容
+	m_list.AddString((const char *)rxdata);
 }

@@ -34,6 +34,7 @@ public:
 	CString	m_IP;
 	CString	m_remote;
 	CMSComm	m_Comm1;
+	CString	m_EditRxData;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
