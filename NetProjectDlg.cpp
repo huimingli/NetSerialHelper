@@ -107,24 +107,50 @@ void CNetProjectDlg::DoDataExchange(CDataExchange* pDX)
 void CNetProjectDlg::receiveData(){
  
 	char buffer[1024];
+	memset(buffer,'\0',sizeof(buffer));
 	int num = recv(m_client,buffer,1024,0);
 	if(num>=0){
 	    buffer[num] = 0;
-    	m_list.AddString(buffer);
+		UpdateData(true);
+    		if(m_showhex){
+				CString result;
+				int i=0;
+				while(buffer[i]!='\0'){
+				    CString temp;
+				    temp.Format("%02X ",(BYTE)buffer[i]);
+					result+=temp;
+					i++;
+				}
+				m_list.AddString(result);
+			}else
+		        m_list.AddString(buffer);
 	}
 }
 
 void CNetProjectDlg::handleData(){
 	sockaddr_in serveraddr;
 	char buffer[1024];
+	memset(buffer,'\0',sizeof(buffer));
 	int len = sizeof(serveraddr);
 	if(m_client == 0){
 	    m_client = accept(m_server,(sockaddr*)&serveraddr,&len);
 	}else{
 		int num = recv(m_client,buffer,1024,0);
+		UpdateData(true);
 		if(num>=0){
 		    buffer[num] = 0;
-		    m_list.AddString(buffer);
+			if(m_showhex){
+				CString result;
+				int i=0;
+				while(buffer[i]!='\0'){
+				    CString temp;
+				    temp.Format("%02X ",(BYTE)buffer[i]);
+					result+=temp;
+					i++;
+				}
+				m_list.AddString(result);
+			}else
+		        m_list.AddString(buffer);
 		}
 	}
 
@@ -217,9 +243,9 @@ BOOL CNetProjectDlg::OnInitDialog()
 	m_portbaud.SetCurSel(5); 
 
 	//校验位
-	m_portcheck.InsertString(0 ,_T("NONE") );
-	m_portcheck.InsertString(1 ,_T("ODD") );
-	m_portcheck.InsertString(2 ,_T("EVEN") );
+	m_portcheck.InsertString(0 ,_T("n") );
+	m_portcheck.InsertString(1 ,_T("o") );
+	m_portcheck.InsertString(2 ,_T("e") );
 	m_portcheck.SetCurSel(0); 
 
 	//数据位
@@ -425,17 +451,45 @@ int String2Hex(CString str, CByteArray &senddata)
 void CNetProjectDlg::OnButtonSend() 
 {
 	// TODO: Add your control notification handler code here
-	UpdateData(TRUE); //读取编辑框内容
-	CString m_EditTxData;
-	m_info.GetWindowText(m_EditTxData);
-	if(m_EditTxData.IsEmpty())
-		return;
-	CByteArray hexdata;
-	int len=String2Hex(m_EditTxData ,hexdata);
-	if(m_sendhex){
-	    m_Comm1.SetOutput(COleVariant(hexdata));//发送数据
+	CString netState;
+	m_connect.GetWindowText(netState);
+	CString serialState;
+	m_serial_port.GetWindowText(serialState);
+	if(netState == "连接"&&serialState == "关闭串口"){
+		UpdateData(TRUE); //读取编辑框内容
+		CString m_EditTxData;
+		m_info.GetWindowText(m_EditTxData);
+		if(m_EditTxData.IsEmpty())
+			return;
+		CByteArray hexdata;
+		int len=String2Hex(m_EditTxData ,hexdata);
+		if(m_sendhex){
+			m_Comm1.SetOutput(COleVariant(hexdata));//发送数据
+		}else{
+			m_Comm1.SetOutput(COleVariant(m_EditTxData));//发送数据
+		}
 	}else{
-		m_Comm1.SetOutput(COleVariant(m_EditTxData));//发送数据
+
+		CString str,name,info;
+     	m_name.GetWindowText(name);
+    	m_info.GetWindowText(str);
+    	if(!str.IsEmpty()){
+	    	info.Format("%s",str);
+			if(m_type.GetCurSel() == 2){
+				UpdateData(true);
+				int n = m_remote.Find(":");
+				CString tmpPort = m_remote.Mid(n+1,m_remote.GetLength()-n);
+				CString tmpIP = m_remote.Left(n);
+				sockaddr_in serveraddr;   	        
+    	        serveraddr.sin_family = AF_INET;
+             	serveraddr.sin_port = htons(atoi(tmpPort));
+            	serveraddr.sin_addr.S_un.S_addr = inet_addr(tmpIP);
+				UpdateData(false);
+				sendto(m_client,info.GetBuffer(0),info.GetLength(),0,(sockaddr*)&serveraddr,sizeof(serveraddr));
+			}else{
+		        int i = send(m_client,info.GetBuffer(0),info.GetLength(),0);
+			}
+		}	
 	}
 }
 
@@ -450,11 +504,29 @@ void CNetProjectDlg::OnClickedSerialPort()
 	if(tmpButton == "打开串口"){
 		//if(m_Comm1.GetPortOpen())
 			//m_Comm1.SetPortOpen(FALSE);
-		 
+ 
+
+		int baudIndex = m_portbaud.GetCurSel();
+		CString baud;
+		m_portbaud.GetLBText( baudIndex, baud);
+
+		int stopbitIndex = m_portstopbit.GetCurSel();
+		CString stopbit;
+		m_portstopbit.GetLBText( stopbitIndex, stopbit);
+
+		int checkIndex = m_portcheck.GetCurSel();
+		CString check;
+		m_portcheck.GetLBText( checkIndex, check);
+
+		int numbitIndex = m_portnumbit.GetCurSel();
+		CString numbit;
+		m_portnumbit.GetLBText( numbitIndex, numbit);
+		  
+         
 		m_Comm1.SetCommPort(m_serial_port_num.GetCurSel()+1); //选择com1，可根据具体情况更改
 		m_Comm1.SetInBufferSize(1024); //设置输入缓冲区的大小，Bytes
 		m_Comm1.SetOutBufferSize(1024); //设置输入缓冲区的大小，Bytes//
-		m_Comm1.SetSettings("9600,n,8,1"); //波特率9600，无校验，8个数据位，1个停止位
+		m_Comm1.SetSettings(baud+check+numbit+","+stopbit); //波特率9600，无校验，8个数据位，1个停止位
 		m_Comm1.SetInputMode(1); //1：表示以二进制方式检取数据
 		m_Comm1.SetRThreshold(1); 
 		//参数1表示每当串口接收缓冲区中有多于或等于1个字符时将引发一个接收数据的OnComm事件

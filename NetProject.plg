@@ -6,13 +6,14 @@
 --------------------Configuration: NetProject - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\15737\AppData\Local\Temp\RSP2BB2.tmp" with contents
+Creating command line "rc.exe /l 0x804 /fo"Debug/NetProject.res" /d "_DEBUG" /d "_AFXDLL" "F:\vcsix\MSDev98\MyProjects\NetProject\NetProject.rc"" 
+Creating temporary file "C:\Users\15737\AppData\Local\Temp\RSP9F59.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/NetProject.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "F:\vcsix\MSDev98\MyProjects\NetProject\NetProjectDlg.cpp"
 ]
-Creating command line "cl.exe @C:\Users\15737\AppData\Local\Temp\RSP2BB2.tmp" 
-Creating temporary file "C:\Users\15737\AppData\Local\Temp\RSP2BB3.tmp" with contents
+Creating command line "cl.exe @C:\Users\15737\AppData\Local\Temp\RSP9F59.tmp" 
+Creating temporary file "C:\Users\15737\AppData\Local\Temp\RSP9F5A.tmp" with contents
 [
 ws2_32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/NetProject.pdb" /debug /machine:I386 /out:"Debug/NetProject.exe" /pdbtype:sept 
 .\Debug\mscomm1.obj
@@ -21,8 +22,9 @@ ws2_32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/NetProject.pd
 .\Debug\StdAfx.obj
 .\Debug\NetProject.res
 ]
-Creating command line "link.exe @C:\Users\15737\AppData\Local\Temp\RSP2BB3.tmp"
+Creating command line "link.exe @C:\Users\15737\AppData\Local\Temp\RSP9F5A.tmp"
 <h3>Output Window</h3>
+Compiling resources...
 Compiling...
 NetProjectDlg.cpp
 Linking...

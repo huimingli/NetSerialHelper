@@ -30,7 +30,7 @@ ImplementationFile=NetProjectDlg.cpp
 Filter=D
 BaseClass=CDialog
 VirtualFilter=dWC
-LastObject=IDC_RADIO_SHOW
+LastObject=IDC_COMBO_BAUD
 
 [CLS:CAboutDlg]
 Type=0
