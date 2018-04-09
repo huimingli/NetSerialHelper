@@ -75,6 +75,7 @@ void CNetProjectDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CNetProjectDlg)
+	DDX_Control(pDX, IDC_BUTTON_SERIAL_PORT, m_serial_port);
 	DDX_Control(pDX, IDOK, m_connect);
 	DDX_Control(pDX, IDC_EDIT_REMOTE, m_remote_editor);
 	DDX_Control(pDX, IDC_COMBO_TYPE, m_type);
@@ -84,6 +85,7 @@ void CNetProjectDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_PORT, m_port);
 	DDX_Text(pDX, IDC_EDIT_IP, m_IP);
 	DDX_Text(pDX, IDC_EDIT_REMOTE, m_remote);
+	DDX_Control(pDX, IDC_MSCOMM1, m_Comm1);
 	//}}AFX_DATA_MAP
 }
 
@@ -134,7 +136,7 @@ BEGIN_MESSAGE_MAP(CNetProjectDlg, CDialog)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, OnClickedConnect)
 	ON_BN_CLICKED(ID_BUTTON_SEND, OnButtonSend)
- 
+	ON_BN_CLICKED(IDC_BUTTON_SERIAL_PORT, OnClickedSerialPort)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -337,3 +339,21 @@ void CNetProjectDlg::OnButtonSend()
 		}
 }
 
+
+void CNetProjectDlg::OnClickedSerialPort() 
+{
+	// TODO: Add your control notification handler code here
+	
+}
+
+BEGIN_EVENTSINK_MAP(CNetProjectDlg, CDialog)
+    //{{AFX_EVENTSINK_MAP(CNetProjectDlg)
+	ON_EVENT(CNetProjectDlg, IDC_MSCOMM1, 1 /* OnComm */, OnComm, VTS_NONE)
+	//}}AFX_EVENTSINK_MAP
+END_EVENTSINK_MAP()
+
+void CNetProjectDlg::OnComm() 
+{
+	// TODO: Add your control notification handler code here
+	
+}

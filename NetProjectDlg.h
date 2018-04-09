@@ -1,5 +1,8 @@
 // NetProjectDlg.h : header file
 //
+//{{AFX_INCLUDES()
+#include "mscomm1.h"
+//}}AFX_INCLUDES
 
 #if !defined(AFX_NETPROJECTDLG_H__B5DB9A01_1DAD_4E90_8A9B_C95D8BA4FD95__INCLUDED_)
 #define AFX_NETPROJECTDLG_H__B5DB9A01_1DAD_4E90_8A9B_C95D8BA4FD95__INCLUDED_
@@ -20,6 +23,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CNetProjectDlg)
 	enum { IDD = IDD_NETPROJECT_DIALOG };
+	CButton	m_serial_port;
 	CButton	m_connect;
 	CEdit	m_remote_editor;
 	CComboBox	m_type;
@@ -29,6 +33,7 @@ public:
 	int		m_port;
 	CString	m_IP;
 	CString	m_remote;
+	CMSComm	m_Comm1;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -52,7 +57,9 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnClickedConnect();
 	afx_msg void OnButtonSend();
-	 
+	afx_msg void OnClickedSerialPort();
+	afx_msg void OnComm();
+	DECLARE_EVENTSINK_MAP()
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
