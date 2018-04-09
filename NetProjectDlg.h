@@ -23,6 +23,11 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CNetProjectDlg)
 	enum { IDD = IDD_NETPROJECT_DIALOG };
+	CComboBox	m_portnumbit;
+	CComboBox	m_portbaud;
+	CComboBox	m_portstopbit;
+	CComboBox	m_portcheck;
+	CComboBox	m_serial_port_num;
 	CButton	m_serial_port;
 	CButton	m_connect;
 	CEdit	m_remote_editor;
@@ -35,6 +40,9 @@ public:
 	CString	m_remote;
 	CMSComm	m_Comm1;
 	CString	m_EditRxData;
+	CString	m_edit_send;
+	BOOL	m_showhex;
+	BOOL	m_sendhex;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -60,6 +68,9 @@ protected:
 	afx_msg void OnButtonSend();
 	afx_msg void OnClickedSerialPort();
 	afx_msg void OnComm();
+	afx_msg void OnClearSendArea();
+	afx_msg void OnClearReceiveArea();
+ 
 	DECLARE_EVENTSINK_MAP()
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
