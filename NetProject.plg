@@ -6,20 +6,9 @@
 --------------------Configuration: NetProject - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\15737\AppData\Local\Temp\RSP4E9E.tmp" with contents
-[
-/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/NetProject.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"F:\vcsix\MSDev98\MyProjects\NetProject\NetProjectDlg.cpp"
-]
-Creating command line "cl.exe @C:\Users\15737\AppData\Local\Temp\RSP4E9E.tmp" 
 Creating command line "link.exe ws2_32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/NetProject.pdb" /debug /machine:I386 /out:"Debug/NetProject.exe" /pdbtype:sept  .\Debug\NetProject.obj .\Debug\NetProjectDlg.obj .\Debug\StdAfx.obj .\Debug\NetProject.res "
 <h3>Output Window</h3>
-Compiling...
-NetProjectDlg.cpp
 Linking...
-Creating command line "bscmake.exe /nologo /o"Debug/NetProject.bsc"  .\Debug\StdAfx.sbr .\Debug\NetProject.sbr .\Debug\NetProjectDlg.sbr"
-Creating browse info file...
-<h3>Output Window</h3>
 
 
 

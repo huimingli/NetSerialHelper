@@ -20,11 +20,15 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CNetProjectDlg)
 	enum { IDD = IDD_NETPROJECT_DIALOG };
+	CButton	m_connect;
+	CEdit	m_remote_editor;
+	CComboBox	m_type;
 	CEdit	m_info;
 	CEdit	m_name;
 	CListBox	m_list;
 	int		m_port;
 	CString	m_IP;
+	CString	m_remote;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -33,6 +37,7 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 	void receiveData();
+	void handleData();
 	BOOL PreTranslateMessage(MSG* pMsg);
 
 // Implementation
@@ -47,11 +52,11 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnClickedConnect();
 	afx_msg void OnButtonSend();
-	afx_msg void OnButtonClose();
+	 
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
-	SOCKET m_client;
+	SOCKET m_client,m_server;
 };
 
 //{{AFX_INSERT_LOCATION}}

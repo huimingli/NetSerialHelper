@@ -65,6 +65,7 @@ CNetProjectDlg::CNetProjectDlg(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CNetProjectDlg)
 	m_port = 0;
 	m_IP = _T("");
+	m_remote = _T("");
 	//}}AFX_DATA_INIT
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -74,28 +75,52 @@ void CNetProjectDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CNetProjectDlg)
+	DDX_Control(pDX, IDOK, m_connect);
+	DDX_Control(pDX, IDC_EDIT_REMOTE, m_remote_editor);
+	DDX_Control(pDX, IDC_COMBO_TYPE, m_type);
 	DDX_Control(pDX, IDC_EDIT_SEND, m_info);
 	DDX_Control(pDX, IDC_EDIT_NICKNAME, m_name);
 	DDX_Control(pDX, IDC_LIST_RECEIVE, m_list);
 	DDX_Text(pDX, IDC_EDIT_PORT, m_port);
 	DDX_Text(pDX, IDC_EDIT_IP, m_IP);
+	DDX_Text(pDX, IDC_EDIT_REMOTE, m_remote);
 	//}}AFX_DATA_MAP
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // 接收来自服务器的消息
 void CNetProjectDlg::receiveData(){
-
+ 
 	char buffer[1024];
 	int num = recv(m_client,buffer,1024,0);
-	buffer[num] = 0;
-	m_list.AddString(buffer);
+	if(num>=0){
+	    buffer[num] = 0;
+    	m_list.AddString(buffer);
+	}
+}
+
+void CNetProjectDlg::handleData(){
+	sockaddr_in serveraddr;
+	char buffer[1024];
+	int len = sizeof(serveraddr);
+	if(m_client == 0){
+	    m_client = accept(m_server,(sockaddr*)&serveraddr,&len);
+	}else{
+		int num = recv(m_client,buffer,1024,0);
+		if(num>=0){
+		    buffer[num] = 0;
+		    m_list.AddString(buffer);
+		}
+	}
 
 }
 
 BOOL CNetProjectDlg::PreTranslateMessage(MSG* pMsg){
 	if(pMsg->message == 1000){
 		receiveData();
+		return CDialog::PreTranslateMessage(pMsg);
+	}else if(pMsg->message == 20001){
+		handleData();
 		return CDialog::PreTranslateMessage(pMsg);
 	}else{
 		return CDialog::PreTranslateMessage(pMsg);
@@ -109,7 +134,7 @@ BEGIN_MESSAGE_MAP(CNetProjectDlg, CDialog)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, OnClickedConnect)
 	ON_BN_CLICKED(ID_BUTTON_SEND, OnButtonSend)
-	ON_BN_CLICKED(IDC_BUTTON_CLOSE, OnButtonClose)
+ 
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -144,7 +169,17 @@ BOOL CNetProjectDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 	
 	// TODO: Add extra initialization here
-	m_client = socket(AF_INET,SOCK_DGRAM,0);
+	m_client = NULL;
+    m_server = NULL;
+	UpdateData(true);
+	m_IP = "127.0.0.1";
+	m_port = 8080;
+	UpdateData(false);
+	m_type.InsertString(0 ,_T("TCP client") );
+    m_type.InsertString(1 ,_T("TCP server") );
+    m_type.InsertString(2 ,_T("UDP") );
+	m_type.SetCurSel(0); 
+	m_remote_editor.EnableWindow(false);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -200,48 +235,105 @@ HCURSOR CNetProjectDlg::OnQueryDragIcon()
 void CNetProjectDlg::OnClickedConnect() 
 {
 	// TODO: Add your control notification handler code here
-	if(m_client == NULL){
-		m_client  = socket(AF_INET,SOCK_DGRAM,0);
-	}
-	sockaddr_in serveraddr;
-	UpdateData(true);
-	serveraddr.sin_family = AF_INET;
-	serveraddr.sin_port = htons(m_port);
-	serveraddr.sin_addr.S_un.S_addr = inet_addr(m_IP);
-	if(connect(m_client,(sockaddr*)&serveraddr,sizeof(serveraddr))!=0){
-		MessageBox("link error");
-		return;
+	//tcp客户端
+	CString tmpButton;
+	m_connect.GetWindowText(tmpButton);
+	if(tmpButton == "连接"){
+		m_connect.SetWindowText(_T("关闭连接"));
+		if(m_type.GetCurSel() == 0){
+		    m_remote_editor.EnableWindow(false);
+	        if(m_client == NULL){
+		        m_client =  socket(AF_INET,SOCK_STREAM,0);
+			}
+        	sockaddr_in serveraddr;
+        	UpdateData(true);
+    	    serveraddr.sin_family = AF_INET;
+        	serveraddr.sin_port = htons(m_port);
+    	    serveraddr.sin_addr.S_un.S_addr = inet_addr(m_IP);
+    	    if(connect(m_client,(sockaddr*)&serveraddr,sizeof(serveraddr))!=0){
+	        	MessageBox("link error");
+			    m_connect.SetWindowText(_T("连接"));
+	    	    return;
+			}else{
+	    	     MessageBox("link successfully");
+			}
+        	WSAAsyncSelect(m_client,m_hWnd,1000,FD_READ);
+     
+		}else if(m_type.GetCurSel() == 1){//tcp服务端
+	    	m_remote_editor.EnableWindow(false);
+			m_server = socket(AF_INET,SOCK_STREAM,0);
+        	WSAAsyncSelect(m_server,m_hWnd,20001,FD_WRITE|FD_READ|FD_ACCEPT);
+        	m_client = 0;
+			sockaddr_in serveraddr;
+        	serveraddr.sin_family = AF_INET;
+			serveraddr.sin_addr.S_un.S_addr = inet_addr(m_IP);
+	        UpdateData(true);
+	        serveraddr.sin_port = htons(m_port);
+        	if(bind(m_server,(sockaddr*)&serveraddr,sizeof(serveraddr))){
+	        	MessageBox("绑定失败");
+	        	return;
+			}
+			int len = sizeof(serveraddr);
+        	listen(m_server,5);
+		 
+
+		}else{//udp
+		    UpdateData(true);
+	      	m_remote_editor.EnableWindow(true);
+	 
+		    UpdateData(false);
+		    if(m_client == NULL){
+		        m_client =  socket(AF_INET,SOCK_DGRAM,0);
+			}
+    	    sockaddr_in serveraddr;
+    	    UpdateData(true);
+         	serveraddr.sin_family = AF_INET;
+    	    serveraddr.sin_port = htons(m_port);
+    	    serveraddr.sin_addr.S_un.S_addr = inet_addr(m_IP);
+		    if(bind(m_client,(sockaddr*)&serveraddr,sizeof(serveraddr)) == SOCKET_ERROR){
+		    	MessageBox("link error");
+	        	return;
+			}
+     
+    	    WSAAsyncSelect(m_client,m_hWnd,1000,FD_READ);
+
+		}
+
 	}else{
-		MessageBox("link successfully");
+		m_connect.SetWindowText(_T("连接"));
+		if(m_client!=NULL){
+	    	closesocket(m_client);
+	        m_client = NULL;
+		}
+	   if(m_server != NULL){
+	    	closesocket(m_server);
+	    	m_server = NULL;
+	   }
 	}
-	WSAAsyncSelect(m_client,m_hWnd,1000,FD_READ);
-	CString str,info;
-	m_name.GetWindowText(str);
-	info.Format("%s---->%s",str,"进入聊天室");
-	int i=send(m_client,info.GetBuffer(0),info.GetLength(),0);
-
-	
 }
- 
-
- 
 
 void CNetProjectDlg::OnButtonSend() 
 {
 	// TODO: Add your control notification handler code here
 		CString str,name,info;
-	m_name.GetWindowText(name);
-	m_info.GetWindowText(str);
-	if(!name.IsEmpty()&&!str.IsEmpty()){
-		info.Format("%s say:%s",name,str);
-		int i = send(m_client,info.GetBuffer(0),info.GetLength(),0);
-	}
+     	m_name.GetWindowText(name);
+    	m_info.GetWindowText(str);
+    	if(!str.IsEmpty()){
+	    	info.Format("%s",str);
+			if(m_type.GetCurSel() == 2){
+				UpdateData(true);
+				int n = m_remote.Find(":");
+				CString tmpPort = m_remote.Mid(n+1,m_remote.GetLength()-n);
+				CString tmpIP = m_remote.Left(n);
+				sockaddr_in serveraddr;   	        
+    	        serveraddr.sin_family = AF_INET;
+             	serveraddr.sin_port = htons(atoi(tmpPort));
+            	serveraddr.sin_addr.S_un.S_addr = inet_addr(tmpIP);
+				UpdateData(false);
+				sendto(m_client,info.GetBuffer(0),info.GetLength(),0,(sockaddr*)&serveraddr,sizeof(serveraddr));
+			}else{
+		        int i = send(m_client,info.GetBuffer(0),info.GetLength(),0);
+			}
+		}
 }
 
-void CNetProjectDlg::OnButtonClose() 
-{
-	// TODO: Add your control notification handler code here
-	closesocket(m_client);
-
-	m_client = NULL;
-}
