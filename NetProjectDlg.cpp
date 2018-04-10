@@ -103,7 +103,7 @@ void CNetProjectDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// 接收来自服务器的消息
+// 接收来tcp对端的消息
 void CNetProjectDlg::receiveData(){
  
 	char buffer[1024];
@@ -127,6 +127,9 @@ void CNetProjectDlg::receiveData(){
 	}
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+// 接收来UDP对端的消息
 void CNetProjectDlg::handleData(){
 	sockaddr_in serveraddr;
 	char buffer[1024];
@@ -312,6 +315,8 @@ HCURSOR CNetProjectDlg::OnQueryDragIcon()
 	return (HCURSOR) m_hIcon;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// 点击进行连接
 void CNetProjectDlg::OnClickedConnect() 
 {
 	// TODO: Add your control notification handler code here
@@ -337,6 +342,7 @@ void CNetProjectDlg::OnClickedConnect()
 			}else{
 	    	     MessageBox("link successfully");
 			}
+			UpdateData(false);
 			m_serial_port.EnableWindow(false);
 
         	WSAAsyncSelect(m_client,m_hWnd,1000,FD_READ);
@@ -347,14 +353,17 @@ void CNetProjectDlg::OnClickedConnect()
 			m_server = socket(AF_INET,SOCK_STREAM,0);
         	WSAAsyncSelect(m_server,m_hWnd,20001,FD_WRITE|FD_READ|FD_ACCEPT);
         	m_client = 0;
+			UpdateData(true);
 			sockaddr_in serveraddr;
         	serveraddr.sin_family = AF_INET;
 			serveraddr.sin_addr.S_un.S_addr = inet_addr(m_IP);
-	        UpdateData(true);
+	        
 	        serveraddr.sin_port = htons(m_port);
+			UpdateData(false);
 			m_serial_port.EnableWindow(false);
         	if(bind(m_server,(sockaddr*)&serveraddr,sizeof(serveraddr))){
 	        	MessageBox("绑定失败");
+				m_connect.SetWindowText(_T("连接"));
 	        	return;
 			}
 			int len = sizeof(serveraddr);
@@ -447,7 +456,7 @@ int String2Hex(CString str, CByteArray &senddata)
 }
 
 
-
+//点击发送按钮
 void CNetProjectDlg::OnButtonSend() 
 {
 	// TODO: Add your control notification handler code here
@@ -455,7 +464,7 @@ void CNetProjectDlg::OnButtonSend()
 	m_connect.GetWindowText(netState);
 	CString serialState;
 	m_serial_port.GetWindowText(serialState);
-	if(netState == "连接"&&serialState == "关闭串口"){
+	if(netState == "连接"&&serialState == "关闭串口"){//串口数据的发送
 		UpdateData(TRUE); //读取编辑框内容
 		CString m_EditTxData;
 		m_info.GetWindowText(m_EditTxData);
@@ -468,7 +477,7 @@ void CNetProjectDlg::OnButtonSend()
 		}else{
 			m_Comm1.SetOutput(COleVariant(m_EditTxData));//发送数据
 		}
-	}else{
+	}else{//网口数据的发送
 
 		CString str,name,info;
      	m_name.GetWindowText(name);
@@ -495,7 +504,7 @@ void CNetProjectDlg::OnButtonSend()
 
 
 
-
+//点击打开串口
 void CNetProjectDlg::OnClickedSerialPort() 
 {
 	// TODO: Add your control notification handler code here
