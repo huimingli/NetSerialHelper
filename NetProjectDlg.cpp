@@ -339,9 +339,7 @@ void CNetProjectDlg::OnClickedConnect()
 	        	MessageBox("link error");
 			    m_connect.SetWindowText(_T("连接"));
 	    	    return;
-			}else{
-	    	     MessageBox("link successfully");
-			}
+			} 
 			UpdateData(false);
 			m_serial_port.EnableWindow(false);
 
@@ -455,6 +453,38 @@ int String2Hex(CString str, CByteArray &senddata)
 	return hexdatalen;
 }
 
+BYTE ConvertHexChar(BYTE ch)
+{
+    if((ch>='0')&&(ch<='9'))
+       return ch-0x30;
+    else if((ch>='A')&&(ch<='F'))
+       return ch-'A'+10;
+    else if((ch>='a')&&(ch<='f'))
+       return ch-'a'+10;        
+    else
+       return -1;
+}
+BYTE * CStringToByteArray(CString str)
+{
+//CString str ="23 1A 00 00 00 CC C4 14 00 0A 40 C5 00 D9 E4 22 33 1F 98 7C";
+BYTE tmpByte = 0x00;
+int strLen = str.GetLength();
+BYTE *cmd = new   BYTE[strLen];;
+memset(cmd, '\0', sizeof(cmd));
+
+for (int i=0, j=0; i<strLen,j<strLen; i++,j++)
+{
+if (str[j] == ' ')
+++j;
+tmpByte = str[j];        
+cmd[i] = ConvertHexChar(tmpByte)<<4;//左移4位
+if (str[++j] == ' ')
+++j;
+tmpByte = str[j];        
+cmd[i] = cmd[i] + (ConvertHexChar(tmpByte) & 0xF);//取低4位然后相加。    
+}
+return cmd;
+}
 
 //点击发送按钮
 void CNetProjectDlg::OnButtonSend() 
@@ -489,14 +519,21 @@ void CNetProjectDlg::OnButtonSend()
 				int n = m_remote.Find(":");
 				CString tmpPort = m_remote.Mid(n+1,m_remote.GetLength()-n);
 				CString tmpIP = m_remote.Left(n);
+				if(tmpPort.IsEmpty()||tmpIP.IsEmpty())
+					return;
 				sockaddr_in serveraddr;   	        
     	        serveraddr.sin_family = AF_INET;
              	serveraddr.sin_port = htons(atoi(tmpPort));
             	serveraddr.sin_addr.S_un.S_addr = inet_addr(tmpIP);
 				UpdateData(false);
-				sendto(m_client,info.GetBuffer(0),info.GetLength(),0,(sockaddr*)&serveraddr,sizeof(serveraddr));
+				sendto(m_client,info,info.GetLength(),0,(sockaddr*)&serveraddr,sizeof(serveraddr));
 			}else{
-		        int i = send(m_client,info.GetBuffer(0),info.GetLength(),0);
+				if(m_sendhex){
+					BYTE *senddata = CStringToByteArray(info);
+					int i = send(m_client,(char*)senddata,sizeof(senddata),0);
+				}else{
+					int i = send(m_client,info,info.GetLength(),0);
+				}
 			}
 		}	
 	}

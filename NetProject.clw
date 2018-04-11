@@ -30,7 +30,7 @@ ImplementationFile=NetProjectDlg.cpp
 Filter=D
 BaseClass=CDialog
 VirtualFilter=dWC
-LastObject=CNetProjectDlg
+LastObject=IDC_CHECK_SEND
 
 [CLS:CAboutDlg]
 Type=0
